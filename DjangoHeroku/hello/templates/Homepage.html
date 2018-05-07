@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+    <title>NBA DataViz App</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../static/assets/css/main.css" />
+		<link rel="shortcut icon" href="../static/images/favicon.ico" type="image/x-icon">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" />
+		<noscript><link rel="stylesheet" href="../static/assets/css/noscript.css" /></noscript>
+		<style>
+		/* Local fomatting for D3 Stuff*/
+		.bar {
+			fill: steelblue;
+		}
+
+		.bar:hover {
+			fill: brown;
+		}
+
+		.axis--x path {
+			display: none;
+		}
+
+		div.tooltip {
+			position: absolute;
+      width: 200px;
+      height: auto;
+      padding: 10px;
+      background-color: white;
+      -webkit-border-radius: 10px;
+      -moz-border-radius: 10px;
+      border-radius: 10px;
+      -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+      -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+			z-index: 1000;
+		}
+
+</style>
+	</head>
+	<body id="body" ng-app="nbaDataVizApp">
+		<!-- Django Tag for Angular interpolation -->
+		{% verbatim %}
+		<div id="content" ng-controller="nbaDataVizController">
+			<!-- Wrapper of the main controller-->
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+				<div id="header-wrap">
+					<div id="header-wrap">
+						<!-- Header -->
+						<header id="header" class="alt">
+							<h1>Visualize 67 Years of NBA Stats</h1>
+						</header>
+					</div>
+					<!-- Header -->
+						<header id="header">
+							<div>
+								<nav id="nav">
+									<ul>
+										<li><input ng-click='GraphPlayer()' type="submit" Value="Graph by Player"></input</li>
+										<li><input ng-click='GraphTeam()' type="submit" Value="Graph by Team"></input></li>
+										<li><input ng-click='GraphYear()' type="submit" Value="Graph by Year"></input></li>
+									</ul>
+								</nav>
+							</div>
+							<div id="GraphNBAD3" class="content">
+								<!--SVG Holder and Data Transfer-->
+								<netsdata-Viz data="playerData"></netsdata-Viz>
+							</div>
+						</header>
+					<!-- Header -->
+					<header id="header" class="alt">
+						<nav id="nav">
+							<ul id="selectionHolder">
+								<!-------------------->
+								<!--Graph By Player-->
+								<!-------------------->
+								<li>
+									<div id="playerSelection">
+										<h3>Choose any NBA PLayer ever!</h3>
+										<input type="text" list="allPlayers" ng-model="Player"
+														ng-change="PlayerSelected(Player)"
+														placeholder="Select any NBA PLayer ever!">
+										<datalist name="allPlayers" id="allPlayers">
+											<option ng-repeat="player in AllPlayers track by $index"
+															value="{{player}}">{{player}}</option>
+										</datalist>
+										<!--Select Metric For use for Graph player-->
+										<h3>Choose A Stat!</h3>
+										<select name="PlayerStatCategory" id="PlayerStatCategory" ng-model="PlayerStatCategory" ng-change="PlayerStatCategorySelector(PlayerStatCategory)">
+											<option ng-repeat="metric in DataColumns" value="{{metric}}">{{metric.FullCatName}}</option>
+										</select>
+									</div>
+								</li>
+								<!-------------------->
+								<!--Graph By Team-->
+								<!-------------------->
+								<li>
+									<div id="teamSelection">
+										<h3>Choose any NBA Team ever!</h3>
+										<input type="text" list="allTeams" ng-model="Team"
+														ng-change="TeamSelected(Team)"
+														placeholder="Select any NBA Team ever!">
+										<datalist name="allTeams" id="allTeams">
+											<option ng-repeat="team in AllTeams"
+															ng-show="([team.FullName] | filter:Team).length">{{team.FullName}}</option>
+										</datalist>
+										<!--Select Metric For use for Graph player-->
+										<h3>Choose A Stat!</h3>
+										<select name="TeamStatCategory" id="TeamStatCategory" ng-model="TeamStatCategory" ng-change="TeamStatCategorySelector(TeamStatCategory)">
+											<option ng-repeat="metric in DataColumns" value="{{metric}}">{{metric.FullCatName}}</option>
+										</select>
+									</div></li>
+									<!-------------------->
+									<!--Graph By Year-->
+									<!-------------------->
+									<li>
+										<div id="yearSelection">
+											<h3>Select Year</h3>
+											<select name="YearSelection" id="YearSelection" ng-model="Year" ng-change="YearSelected(Year)">
+												<option ng-repeat="year in allYears" value="{{year}}">{{year}}</option>
+											</select>
+											<!--Select Metric For use for Graph player-->
+											<h3>Choose A Stat!</h3>
+											<select label="Category" name="YearStatCategory" id="YearStatCategory" ng-model="YearStatCategory" ng-change="YearStatCategorySelector(YearStatCategory)">
+												<option ng-repeat="metric in DataColumns" value="{{metric}}">{{metric.FullCatName}}</option>
+											</select>
+										</div>
+									</li>
+								</ul>
+							</nav>
+						</header>
+					</div>
+
+				<!-- Main -->
+					<div id="main">
+
+					</div>
+
+				<!-- Footer -->
+				<footer id="footer">
+					<p class="copyright">Players with * next to their names are Hall of Famers</p>
+					<p class="copyright">&copy; Josh Schenkein 2018</p>
+				</footer>
+
+			</div>
+
+		<!-- Background -->
+			<div id="bg"></div>
+
+		<!-- Django Tag for Angular interpolation -->
+		{% endverbatim %}
+
+		<!-- Scripts -->
+			<script src="https://d3js.org/d3.v4.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash-fp/0.10.4/lodash-fp.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+			<!-- Local Angular App -->
+	    <script src="../static/assets/js/NBADataVizController.js"></script>
+	    <script src="../static/assets/js/NBADataVizDirective.js"></script>
+			<!-- Local Stylings -->
+			<script src="../static/assets/js/jquery.min.js"></script>
+			<script src="../static/assets/js/skel.min.js"></script>
+			<script src="../static/assets/js/util.js"></script>
+			<script src="../static/assets/js/main.js"></script>
+
+		</div><!-- End Controller -->
+	</body>
+</html>
